@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Collections.Generic;
 using System;
 
@@ -27,7 +27,7 @@ class Program
 
         int homeworkCompletion = 0;
         int sanityLevel = 10;
-        int holidayDuration = 7; // 1 weeks
+        int holidayDuration = 7; // 1 week
         int daysSpent = 0;
 
         bool hasWon = false;
@@ -37,30 +37,28 @@ class Program
         int selectedOption = 0;
         int consecutiveProcrastination = 0;
 
-        string activity = "None";  // Initialize activity to "None" at the start
+        string activity = "None";
 
         Console.CursorVisible = false;
 
         do
         {
-            Console.Clear();
-
             int timeRemaining = holidayDuration - daysSpent;
-            Console.WriteLine($"Time remaining: {timeRemaining} days");
-            Console.WriteLine("------------------------------------------------------");
-            DisplayMeters(homeworkCompletion, sanityLevel);
+            RedrawScreen(timeRemaining, homeworkCompletion, sanityLevel);
 
             if (rng.Next(1, 11) > 8) // 20% chance
             {
                 HandleRandomEvent(ref sanityLevel, ref homeworkCompletion, ref fatigueLevel);
                 eventOccurred = true;
             }
+
             if (eventOccurred)
             {
                 Thread.Sleep(3000); // Pause to let the player read the event text
                 eventOccurred = false; // Reset the flag
             }
-            if (fatigueLevel >= 10)
+
+            if (fatigueLevel >= 10) // My fatuige while doing this was unreal.
             {
                 Console.WriteLine("You're too fatigued to work. You must rest!");
                 continue;
@@ -82,7 +80,10 @@ class Program
             // Homework Types
             if (selectedOption == 0 && consecutiveProcrastination == 0)
             {
+                RedrawScreen(timeRemaining, homeworkCompletion, sanityLevel);
+
                 string type = HandleHomeworkType();
+
                 switch (type)
                 {
                     case "Easy":
@@ -115,11 +116,23 @@ class Program
                 break;
             }
 
+            if (activity.Equals("Homework"))
+            {
+                Console.WriteLine($"You made progress on your homework. Activity: {activity}");
+                DisplayASCIIArt("Homework");
+            }
+            else if (activity.Equals("Procrastinate"))
+            {
+                Console.WriteLine($"You procrastinated. Activity: {activity}");
+                DisplayASCIIArt("Procrastinate");
+            }
+
             if (selectedOption == 0)
             {
                 // Homework logic
                 if (consecutiveProcrastination == 0)
                 {
+                    activity = "Homework";
                     string[] homeworkActivities = { "Reading", "Writing", "Calculating", "Researching" };
                     activity = homeworkActivities[new Random().Next(homeworkActivities.Length)];
                     Console.WriteLine($"You made progress on your homework. Activity: {activity}");
@@ -130,6 +143,7 @@ class Program
             else if (selectedOption == 1)
             {
                 // Procrastination logic
+                activity = "Procrastinate";
                 string[] procrastinationActivities = { "Watching TV", "Playing games", "Daydreaming", "Socializing" };
                 activity = procrastinationActivities[new Random().Next(procrastinationActivities.Length)];
                 Console.WriteLine($"You procrastinated. Activity: {activity}");
@@ -158,9 +172,9 @@ class Program
                 hasLostDueToHolidayEnd = true;
             }
 
-            DisplayStickman(sanityLevel, activity);
+            DisplayASCIIArt(activity, sanityLevel);
 
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
 
         } while (!hasWon && !hasLostDueToHolidayEnd && !hasLostDueToSanity);
 
@@ -170,7 +184,7 @@ class Program
         }
         else if (hasLostDueToHolidayEnd)
         {
-            Console.WriteLine("You've run out of time. Summer holiday has ended, and your homework is incomplete!");
+            Console.WriteLine("You've run out of time. Half term has ended, and your homework is incomplete!");
         }
         else if (hasLostDueToSanity)
         {
@@ -256,31 +270,6 @@ class Program
         return (value < min) ? min : (value > max) ? max : value;
     }
 
-    static void DisplayStickman(int sanityLevel, string activity)
-    {
-        string stickman = "";
-        switch (sanityLevel)
-        {
-            case int n when (n > 7):
-                stickman = "  ^_^\n /   \\\n -----";
-                break;
-            case int n when (n > 4):
-                stickman = "  -_-\n /   \\\n -----";
-                break;
-            case int n when (n > 2):
-                stickman = "  T_T\n /   \\\n -----";
-                break;
-            case int n when (n > 0):
-                stickman = "  >_<\n /   \\\n -----";
-                break;
-            default:
-                stickman = "  X_X\n /   \\\n -----";
-                break;
-        }
-        Console.WriteLine($"Activity: {activity}");
-        Console.WriteLine(stickman);
-    }
-
     static string HandleHomeworkType()
     {
         string[] homeworkTypes = { "Easy", "Medium", "Hard" };
@@ -319,5 +308,57 @@ class Program
             }
         }
     }
+    static void RedrawScreen(int timeRemaining, int homeworkCompletion, int sanityLevel)
+    {
+        Console.Clear();
+        Console.SetCursorPosition(0, 0);
+        Console.WriteLine($"Time remaining: {timeRemaining} days");
+        Console.WriteLine("------------------------------------------------------");
+        DisplayMeters(homeworkCompletion, sanityLevel);
+    }
 
+    static void DisplayASCIIArt(string activity = "", int sanityLevel = 0) 
+    {
+        string art = "";
+        if (activity.Equals("Homework"))
+        {
+            art = "    _____  __  \n" +
+                  "   /     \\/  \\ \n" +
+                  "  /  ^   \\/^  \\\n" +
+                  " /_^_^_^\\/ ^ ^\\\n" +
+                  " \\_____/ \\___/ ";
+        }
+        else if (activity.Equals("Procrastinate"))
+        {
+            art = "   _____     \n" +
+                  "  /     \\    \n" +
+                  " | o o |\n" +
+                  " |   ~  |\n" +
+                  "  \\_____/    ";
+        }
+        else
+        {
+            switch (sanityLevel)
+            {
+                case int n when (n > 7):
+                    art = "  ^_^\n /   \\\n -----";
+                    break;
+                case int n when (n > 4):
+                    art = "  -_-\n /   \\\n -----";
+                    break;
+                case int n when (n > 2):
+                    art = "  T_T\n /   \\\n -----";
+                    break;
+                case int n when (n > 0):
+                    art = "  >_<\n /   \\\n -----";
+                    break;
+                default:
+                    art = "  X_X\n /   \\\n -----";
+                    break;
+            }
+        }
+
+        Console.WriteLine($"Activity: {activity}");
+        Console.WriteLine(art);
+    }
 }
